@@ -111,7 +111,7 @@ sub _build_prereqs {
   require CPAN::Meta::Requirements;
   my $prereqs = CPAN::Meta::Requirements->new;
   foreach my $spec ( @{ $self->plugin_specs } ){
-    my ($name, $class, $payload) = @$spec;
+    my (undef, $class, $payload) = @$spec;
     $payload ||= {};
     $prereqs->add_minimum($class => $payload->{':version'} || 0)
   }
