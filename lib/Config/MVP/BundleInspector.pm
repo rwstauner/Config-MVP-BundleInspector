@@ -5,6 +5,8 @@ use warnings;
 package Config::MVP::BundleInspector;
 # ABSTRACT: Determine prereqs and INI string from PluginBundles
 
+use Class::Load ();
+
 use Moose;
 use MooseX::Types::Moose qw( Str ArrayRef );
 use MooseX::Types::Perl qw( PackageName );
