@@ -15,11 +15,24 @@ use namespace::autoclean;
 
 # lots of lazy builders for subclasses
 
+=attr bundle_class
+
+The class to inspect.
+
+=cut
+
 has bundle_class => (
   is         => 'ro',
   isa        => PackageName,
   required   => 1,
 );
+
+=attr bundle_method
+
+The class method to call that returns the list of plugin specs.
+Defaults to C<mvp_bundle_config>
+
+=cut
 
 has bundle_method => (
   is         => 'lazy',
@@ -30,14 +43,30 @@ sub _build_bundle_method {
   'mvp_bundle_config'
 }
 
+=attr bundle_name
+
+Passed to the class method in a hashref as the C<name> value.
+Defaults to L</bundle_class>.
+
+=cut
+
 has bundle_name => (
   is         => 'lazy',
   isa        => Str,
 );
 
 sub _build_bundle_name {
-  $_[0]->bundle_class
+  return $_[0]->bundle_class;
 }
+
+=attr plugin_specs
+
+An arrayref of plugin specs returned from the L</bundle_class>.
+A plugin spec is an array ref of:
+
+  [ $name, $package, \%payload ]
+
+=cut
 
 has plugin_specs => (
   is         => 'lazy',
@@ -64,6 +93,13 @@ sub _plugin_specs_from_bundle_method {
   ];
 }
 
+=attr prereqs
+
+A L<CPAN::Meta::Requirements> object representing the prerequisites
+as determined from the plugin specs.
+
+=cut
+
 has prereqs => (
   is         => 'lazy',
   isa        => 'CPAN::Meta::Requirements',
@@ -83,10 +119,24 @@ sub _build_prereqs {
   return $prereqs;
 }
 
+=attr ini_string
+
+A string representing the bundle's contents in INI format.
+Generated from the plugin specs by L<Config::MVP::Writer::INI>.
+
+=cut
+
 has ini_string => (
   is         => 'lazy',
   isa        => Str,
 );
+
+=attr ini_opts
+
+Options to pass to L<Config::MVP::Writer::INI>.
+Defaults to an empty hashref.
+
+=cut
 
 has ini_opts => (
   is         => 'lazy',
@@ -112,6 +162,14 @@ __PACKAGE__->meta->make_immutable;
 
 =head1 SYNOPSIS
 
+  my $inspector = Config::MVP::BundleInspector->new(
+    bundle_class => 'SomeApp::PluginBundle::Stuff',
+  );
+
+  $inspector->prereqs;
+
 =head1 DESCRIPTION
+
+This module gathers info about the plugin specs from a L<Config::MVP> C<PluginBundle>.
 
 =cut
