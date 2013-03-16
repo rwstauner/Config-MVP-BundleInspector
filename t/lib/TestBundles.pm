@@ -30,4 +30,37 @@ sub bundle_config {
   );
 }
 
+package
+  Dist::Zilla::PluginBundle::SullivanStreet;
+
+sub pkg { 'Dist::Zilla::' . $_[0] }
+
+our $Easy = 0;
+sub DOES { $Easy }
+
+sub add_bundle {
+  my ($self) = @_;
+  push @{ $self->{plugins} }, (
+    [August => pkg('Plugin::Everything')],
+    [After  => pkg('Plugin::Everything')],
+  );
+}
+
+sub new {
+  my $self = bless { plugins => [], }, shift;
+  push @{ $self->{plugins} }, (
+    [Ghost   => pkg('Plugin::Train')],
+    [Raining => 'In::Baltimore', { ':version' => 'v1.23.45' }],
+    [Murder  => pkg('PluginBundle::Of::One'),  { 'version'  => 'not :version' }],
+  );
+  $self->add_bundle('EverythingAfter'),
+  return $self;
+}
+
+sub bundle_config {
+  return @{ $_[0]->new->plugins }
+}
+
+sub plugins { $_[0]->{plugins} }
+
 1;
