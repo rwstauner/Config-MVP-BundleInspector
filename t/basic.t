@@ -25,6 +25,14 @@ subtest mvp_bundle_config => sub {
     $bundle . '::Jones'         => 0,
     $bundle . '::BlueBuildings' => '0.003',
   }, 'simplified prereqs with version';
+
+  eq_or_diff $bi->ini_string, <<INI, 'ini_string';
+[${bundle}::Jones / Omaha]
+salutation = mr
+
+[${bundle}::BlueBuildings / Perfect]
+:version = 0.003
+INI
 };
 
 subtest bundle_config => sub {
@@ -45,6 +53,19 @@ subtest bundle_config => sub {
     $bundle . '::Time' => '1.2',
     $bundle . '::King' => 0,
   }, 'prereqs with latest version';
+
+  eq_or_diff $bi->ini_string, <<INI, 'ini_string';
+[${bundle}::Time / Time]
+:version      = 1.2
+needs_feature = b
+
+[${bundle}::Time / TimeAgain]
+:version   = 1.1
+only_needs = feature
+only_needs = a
+
+[${bundle}::King / Rain]
+INI
 };
 
 done_testing;

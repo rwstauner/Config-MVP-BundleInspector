@@ -66,6 +66,25 @@ sub _build_prereqs {
   return $prereqs;
 }
 
+has ini_string => (
+  is         => 'ro',
+  isa        => Str,
+  lazy       => 1,
+  builder    => '_build_ini_string',
+);
+
+sub _build_ini_string {
+  my ($self) = @_;
+
+  require Config::MVP::Writer::INI;
+  my $string = Config::MVP::Writer::INI->new({
+    # TODO: ini_opts
+  })->ini_string($self->plugin_specs);
+
+  return $string;
+}
+
+
 __PACKAGE__->meta->make_immutable;
 1;
 
