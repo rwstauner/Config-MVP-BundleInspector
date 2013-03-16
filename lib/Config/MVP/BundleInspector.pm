@@ -8,50 +8,65 @@ package Config::MVP::BundleInspector;
 use Class::Load ();
 
 use Moose;
-use MooseX::Types::Moose qw( Str ArrayRef );
-use MooseX::Types::Perl qw( PackageName );
+use MooseX::AttributeShortcuts;
+use MooseX::Types::Moose qw( Str ArrayRef HashRef );
+use MooseX::Types::Perl qw( PackageName Identifier );
+use namespace::autoclean;
 
-has bundle => (
+# lots of lazy builders for subclasses
+
+has bundle_class => (
   is         => 'ro',
   isa        => PackageName,
   required   => 1,
 );
 
+has bundle_method => (
+  is         => 'lazy',
+  isa        => Identifier,
+);
+
+sub _build_bundle_method {
+  'mvp_bundle_config'
+}
+
+has bundle_name => (
+  is         => 'lazy',
+  isa        => Str,
+);
+
+sub _build_bundle_name {
+  $_[0]->bundle_class
+}
+
 has plugin_specs => (
-  is         => 'ro',
+  is         => 'lazy',
   isa        => ArrayRef,
-  lazy       => 1,
-  builder    => '_build_plugin_specs',
 );
 
 sub _build_plugin_specs {
   my ($self) = @_;
-  my $class = $self->bundle;
+  my $class = $self->bundle_class;
+  my $method = $self->bundle_method;
 
   Class::Load::load_class($class);
-
-  # HACK: this is hardly sufficient
-  my $method = $class->can('bundle_config')
-    ? 'bundle_config'
-    : 'mvp_bundle_config';
 
   return $self->_plugin_specs_from_bundle_method($class, $method);
 }
 
 sub _plugin_specs_from_bundle_method {
   my ($self, $class, $method) = @_;
-
-  # HACK: this is the convention for dz and pw... any others?
-  (my $bundle_name = $class) =~ s/.+PluginBundle::/\@/;
-
-  return [ $class->$method({ name => $bundle_name, payload => { expand_bundles => 0 } }) ];
+  return [
+    $class->$method({
+      name    => $self->bundle_name,
+      payload => {},
+    })
+  ];
 }
 
 has prereqs => (
-  is         => 'ro',
+  is         => 'lazy',
   isa        => 'CPAN::Meta::Requirements',
-  lazy       => 1,
-  builder    => '_build_prereqs',
 );
 
 sub _build_prereqs {
@@ -69,23 +84,28 @@ sub _build_prereqs {
 }
 
 has ini_string => (
-  is         => 'ro',
+  is         => 'lazy',
   isa        => Str,
-  lazy       => 1,
-  builder    => '_build_ini_string',
 );
+
+has ini_opts => (
+  is         => 'lazy',
+  isa        => HashRef,
+);
+
+sub _build_ini_opts {
+  return {};
+}
 
 sub _build_ini_string {
   my ($self) = @_;
 
   require Config::MVP::Writer::INI;
-  my $string = Config::MVP::Writer::INI->new({
-    # TODO: ini_opts
-  })->ini_string($self->plugin_specs);
+  my $string = Config::MVP::Writer::INI->new($self->ini_opts)
+    ->ini_string($self->plugin_specs);
 
   return $string;
 }
-
 
 __PACKAGE__->meta->make_immutable;
 1;

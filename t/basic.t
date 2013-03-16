@@ -11,7 +11,7 @@ eval "require $mod" or die $@;
 subtest mvp_bundle_config => sub {
   my $bundle = 'TestBundles::RoundHere';
   my $bi = new_ok($mod, [
-    bundle => $bundle,
+    bundle_class => $bundle,
   ]);
 
   local *pkg  = sub { $bundle . '::' . $_[0] };
@@ -38,7 +38,8 @@ INI
 subtest bundle_config => sub {
   my $bundle = 'TestBundles::AnnaBegins';
   my $bi = new_ok($mod, [
-    bundle => $bundle,
+    bundle_class => $bundle,
+    bundle_method => 'bundle_config',
   ]);
 
   local *pkg  = sub { $bundle . '::' . $_[0] };
