@@ -56,7 +56,7 @@ sub _build_prereqs {
   my ($self) = @_;
 
   return {
-    map { ($_->[1] => $_[2]->{':version'}) }
+    map { ($_->[1] => $_->[2]->{':version'} || 0) }
       @{ $self->plugin_specs }
   }
 }
