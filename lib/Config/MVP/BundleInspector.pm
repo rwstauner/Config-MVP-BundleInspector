@@ -47,7 +47,7 @@ sub _plugin_specs_from_bundle_method {
 
 has prereqs => (
   is         => 'ro',
-  isa        => 'HashRef',
+  isa        => 'CPAN::Meta::Requirements',
   lazy       => 1,
   builder    => '_build_prereqs',
 );
@@ -55,10 +55,15 @@ has prereqs => (
 sub _build_prereqs {
   my ($self) = @_;
 
-  return {
-    map { ($_->[1] => $_->[2]->{':version'} || 0) }
-      @{ $self->plugin_specs }
+  require CPAN::Meta::Requirements;
+  my $prereqs = CPAN::Meta::Requirements->new;
+  foreach my $spec ( @{ $self->plugin_specs } ){
+    my ($name, $class, $payload) = @$spec;
+    $payload ||= {};
+    $prereqs->add_minimum($class => $payload->{':version'} || 0)
   }
+
+  return $prereqs;
 }
 
 __PACKAGE__->meta->make_immutable;

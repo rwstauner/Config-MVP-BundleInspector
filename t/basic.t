@@ -21,7 +21,7 @@ subtest mvp_bundle_config => sub {
 
   ], 'plugin_specs';
 
-  eq_or_diff $bi->prereqs, {
+  eq_or_diff $bi->prereqs->as_string_hash, {
     $bundle . '::Jones'         => 0,
     $bundle . '::BlueBuildings' => '0.003',
   }, 'simplified prereqs with version';
@@ -41,9 +41,10 @@ subtest bundle_config => sub {
 
   ], 'plugin_specs';
 
-  eq_or_diff $bi->prereqs, {
+  eq_or_diff $bi->prereqs->as_string_hash, {
     $bundle . '::Time' => '1.2',
     $bundle . '::King' => 0,
   }, 'prereqs with latest version';
 };
 
+done_testing;
